@@ -1,6 +1,6 @@
 FROM golang:1.13.4-alpine3.10 as builder
 
-ENV GO111MODULE=onB GOOS=linux GOARCH=amd64
+ENV GO111MODULE=on GOOS=linux GOARCH=amd64
 
 WORKDIR /opt/armory/build/
 ADD ./ /opt/armory/build/

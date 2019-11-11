@@ -12,6 +12,9 @@ var (
 )
 
 func TestProperHelloMessage(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
 	flag.Parse()
 	helloUrl := *endpoint + "/hello"
 	resp, err := http.Get(helloUrl)
@@ -28,6 +31,9 @@ func TestProperHelloMessage(t *testing.T) {
 }
 
 func TestProperVersion(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
 	flag.Parse()
 	helloUrl := *endpoint + "/version"
 	resp, err := http.Get(helloUrl)
