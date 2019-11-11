@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: summit-2019-demo
+  labels:
+    app: summit-2019-dmeo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: summit-2019-demo
+  template:
+    metadata:
+      labels:
+        app: summit-2019-demo
+    spec:
+      containers:
+        - name: app
+          image: ethanfrogers/summit-2019-demo
+          ports:
+            - containerPort: 3000
+          env:
+            - name: HELLO_MESSAGE
+              value: "BAD HELLO MESSAGE"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: summit-2019-demo
+  labels:
+    app: summit-2019-dmeo
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: summit-2019-demo
+  type: ClusterIP
