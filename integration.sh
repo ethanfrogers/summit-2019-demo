@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -xe
 
 ENDPOINT=${ENDPOINT:-http://localhost:3000}
 
