@@ -1,0 +1,197 @@
+{
+ "appConfig": {},
+ "application": "summit2019",
+ "expectedArtifacts": [],
+ "id": "2108bb7c-a0d8-4959-b199-c2dfc2860063",
+ "index": 0,
+ "keepWaitingPipelines": false,
+ "lastModifiedBy": "anonymous",
+ "limitConcurrent": true,
+ "name": "Summit 2019 Demo App",
+ "stages": [
+  {
+   "alias": "preconfiguredJob",
+   "expectedArtifacts": [
+    {
+     "defaultArtifact": {
+      "artifactAccount": "docker-registry",
+      "id": "fda7a5ae-4c6b-4d07-acfb-5c3d30b2bbe3",
+      "name": "ethanfrogers/summit-2019-demo",
+      "reference": "ethanfrogers/summit-2019-demo:${#stage(\"Evaluate Variables\")['outputs']['REVISION']}",
+      "type": "docker/image",
+      "version": "${#stage(\"Evaluate Variables\")['outputs']['REVISION']}"
+     },
+     "displayName": "docker-image",
+     "id": "9c70ba81-b172-4857-a1e4-70f4b1939331",
+     "matchArtifact": {
+      "artifactAccount": "docker-registry",
+      "id": "b94fce6a-59a5-4224-a263-aa3b70a2c686",
+      "name": "ethanfrogers/summit-2019-demo",
+      "type": "docker/image"
+     },
+     "useDefaultArtifact": true,
+     "usePriorArtifact": false
+    }
+   ],
+   "name": "Build Docker Image",
+   "parameters": {
+    "BRANCH": "${#stage('Evaluate Variables').outputs.BRANCH}",
+    "DESTINATION": "ethanfrogers/summit-2019-demo:${#stage('Evaluate Variables').outputs.REVISION}",
+    "DOCKERFILE": "./Dockerfile",
+    "REPO": "https://github.com/ethanfrogers/summit-2019-demo"
+   },
+   "refId": "2",
+   "requisiteStageRefIds": [
+    "3"
+   ],
+   "type": "kanikoBuild"
+  },
+  {
+   "failOnFailedExpressions": true,
+   "name": "Evaluate Variables",
+   "refId": "3",
+   "requisiteStageRefIds": [],
+   "type": "evaluateVariables",
+   "variables": [
+    {
+     "key": "BRANCH",
+     "value": "${trigger.branch ?: \"master\" }"
+    },
+    {
+     "key": "REVISION",
+     "value": "${trigger.hash ?: \"latest\" }"
+    }
+   ]
+  },
+  {
+   "account": "added-from-api",
+   "cloudProvider": "kubernetes",
+   "manifestArtifact": {
+    "artifactAccount": "github",
+    "id": "50c47936-8acc-479c-8ca7-1438560fd43d",
+    "name": "kubernetes/manifest.yml",
+    "reference": "https://api.github.com/repos/ethanfrogers/summit-2019-demo/contents/kubernetes/manifest.yml",
+    "type": "github/file",
+    "version": "${#stage('Evaluate Variables').outputs.BRANCH}"
+   },
+   "moniker": {
+    "app": "summit2019"
+   },
+   "name": "Deploy Staging",
+   "namespaceOverride": "ethan-dev",
+   "refId": "5",
+   "requiredArtifactIds": [
+    "9c70ba81-b172-4857-a1e4-70f4b1939331"
+   ],
+   "requiredArtifacts": [],
+   "requisiteStageRefIds": [
+    "2"
+   ],
+   "skipExpressionEvaluation": false,
+   "source": "artifact",
+   "trafficManagement": {
+    "enabled": false,
+    "options": {
+     "enableTraffic": false,
+     "services": []
+    }
+   },
+   "type": "deployManifest"
+  },
+  {
+   "alias": "preconfiguredJob",
+   "name": "Run Integration Tests",
+   "parameters": {
+    "BRANCH": "master",
+    "REPO": "https://github.com/ethanfrogers/summit-2019-demo",
+    "image": "golang:1.13.4",
+    "scriptPath": "ENDPOINT=http://summit-2019-demo.ethan-dev:3000  bash integration.sh"
+   },
+   "refId": "6",
+   "requisiteStageRefIds": [
+    "5"
+   ],
+   "type": "runContainerScript"
+  },
+  {
+   "account": "added-from-api",
+   "app": "summit2019",
+   "cloudProvider": "kubernetes",
+   "completeOtherBranchesThenFail": false,
+   "continuePipeline": true,
+   "failPipeline": false,
+   "kinds": [
+    "job"
+   ],
+   "labelSelectors": {
+    "selectors": [
+     {
+      "key": "job",
+      "kind": "EQUALS",
+      "values": [
+       "kaniko"
+      ]
+     }
+    ]
+   },
+   "location": "ethan-dev",
+   "mode": "label",
+   "name": "Cleanup Build Job",
+   "options": {
+    "cascading": true
+   },
+   "refId": "7",
+   "requisiteStageRefIds": [
+    "2"
+   ],
+   "type": "deleteManifest"
+  },
+  {
+   "account": "added-from-api",
+   "cloudProvider": "kubernetes",
+   "manifestArtifact": {
+    "artifactAccount": "github",
+    "id": "50c47936-8acc-479c-8ca7-1438560fd43d",
+    "name": "kubernetes/manifest.yml",
+    "reference": "https://api.github.com/repos/ethanfrogers/summit-2019-demo/contents/kubernetes/manifest.yml",
+    "type": "github/file",
+    "version": "${#stage('Evaluate Variables').outputs.BRANCH}"
+   },
+   "moniker": {
+    "app": "summit2019"
+   },
+   "name": "Deploy Production",
+   "namespaceOverride": "ethan-dev-prod",
+   "refId": "8",
+   "requiredArtifactIds": [
+    "9c70ba81-b172-4857-a1e4-70f4b1939331"
+   ],
+   "requiredArtifacts": [],
+   "requisiteStageRefIds": [
+    "6"
+   ],
+   "skipExpressionEvaluation": false,
+   "source": "artifact",
+   "trafficManagement": {
+    "enabled": false,
+    "options": {
+     "enableTraffic": false,
+     "services": []
+    }
+   },
+   "type": "deployManifest"
+  }
+ ],
+ "triggers": [
+  {
+   "branch": "master",
+   "enabled": true,
+   "project": "ethanfrogers",
+   "secret": "helloworld",
+   "slug": "summit-2019-demo",
+   "source": "github",
+   "type": "git"
+  }
+ ],
+ "updateTs": "1573479557000"
+}

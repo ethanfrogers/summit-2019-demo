@@ -1,0 +1,17 @@
+#!/bin/bash -xe
+
+artifact_json() {
+  cat << EOF
+{
+  "type":"git/repo",
+  "artifactAccount": "${ARTIFACT_ACCOUNT}",
+  "reference": "${URL}",
+  "version": "${BRANCH}"
+}
+EOF
+}
+
+ARTIFACT_SERVICE=${ARTIFACT_SERVICE:-http://localhost:7002}
+OUTPUT_DIR=${OUTPUT_DIR:-./workspace/}
+curl -X PUT -o artifact.tgz -H "Content-Type: application/json" ${ARTIFACT_SERVICE}/artifacts/fetch -d "$(artifact_json)"
+tar -xzf artifact.tgz --directory ${OUTPUT_DIR}
