@@ -19,11 +19,11 @@ spec:
           image: ethanfrogers/summit-2019-demo
           ports:
             - containerPort: 3000
-#          env:
-#            - name: HELLO_MESSAGE
-#              value: "hello spinnaker summit 2019!"
-#            - name: VERSION
-#              value: 0.0.1
+          env:
+            - name: HELLO_MESSAGE
+              value: "hello spinnaker summit 2019!"
+            - name: VERSION
+              value: 0.0.1
 ---
 apiVersion: v1
 kind: Service
