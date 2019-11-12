@@ -173,10 +173,14 @@
    "skipExpressionEvaluation": false,
    "source": "artifact",
    "trafficManagement": {
-    "enabled": false,
+    "enabled": true,
     "options": {
-     "enableTraffic": false,
-     "services": []
+     "enableTraffic": true,
+     "namespace": "ethan-dev",
+     "services": [
+      "service summit-2019-demo"
+     ],
+     "strategy": "redblack"
     }
    },
    "type": "deployManifest"
@@ -193,5 +197,5 @@
    "type": "git"
   }
  ],
- "updateTs": "1573479557000"
+ "updateTs": "1573565414000"
 }
