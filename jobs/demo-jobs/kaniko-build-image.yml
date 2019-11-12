@@ -1,0 +1,76 @@
+label: Kaniko
+description: Build a Docker image with Kaniko
+type: kanikoBuild
+waitForCompletion: true
+parameters:
+  - name: BRANCH
+    label: Repo Branch
+    mapping: manifest.spec.template.spec.initContainers[0].env[0].value
+  - name: REPO
+    label: Repo URL
+    mapping: manifest.spec.template.spec.initContainers[0].env[1].value
+  - name: DOCKERFILE
+    label: Path to Dockerfile
+    mapping: manifest.spec.template.spec.containers[0].env[0].value
+  - name: DESTINATION
+    label: Image Destination
+    mapping: manifest.spec.template.spec.containers[0].env[2].value
+credentials: added-from-api
+account: added-from-api
+cloudProvider: kubernetes
+application: k8s2
+manifest:
+  apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: kaniko-builder
+    namespace: ethan-dev
+    labels:
+      job: kaniko
+  spec:
+    backoffLimit: 0
+    template:
+      spec:
+        restartPolicy: Never
+        initContainers:
+          - name: git
+            image: ethanfrogers/fetch-artifact:v2
+            env:
+              - name: BRANCH
+                value: master
+              - name: URL
+                value: placeholder
+              - name: OUTPUT_DIR
+                value: /workspace
+              - name: ARTIFACT_ACCOUNT
+                value: gitrepo
+              - name: ARTIFACT_SERVICE
+                value: http://spin-clouddriver:7002
+            volumeMounts:
+              - name: workspace
+                mountPath: /workspace
+        containers:
+          - name: kaniko
+            image: gcr.io/kaniko-project/executor:latest
+            env:
+              - name: DOCKERFILE
+                value: Dockerfile
+              - name: CONTEXT
+                value: dir:///workspace
+              - name: DESTINATION
+                value: ethanfrogers/loadtesting
+            args:
+              - "--dockerfile=$(DOCKERFILE)"
+              - "--context=$(CONTEXT)"
+              - "--destination=$(DESTINATION)"
+            volumeMounts:
+              - name: workspace
+                mountPath: /workspace
+              - name: docker-config
+                mountPath: /kaniko/.docker
+        volumes:
+          - name: workspace
+            emptyDir: {}
+          - name: docker-config
+            secret:
+              secretName: docker-creds

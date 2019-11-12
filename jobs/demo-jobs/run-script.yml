@@ -1,0 +1,70 @@
+label: Run Script
+description: Runs a Script in a contianer
+type: runContainerScript
+waitForCompletion: true
+cloudProvider: kubernetes
+credentials: added-from-api
+account: added-from-api
+application: kubernetes
+parameters:
+  - name: image
+    label: Image
+    mapping: manifest.spec.template.spec.containers[0].image
+    order: 0
+  - name: scriptPath
+    label:  Command
+    mapping: manifest.spec.template.spec.containers[0].env[0].value
+    order: 1
+  - name: BRANCH
+    label: Repo Branch
+    mapping: manifest.spec.template.spec.initContainers[0].env[0].value
+    order: 3
+  - name: REPO
+    label: Repo URL
+    mapping: manifest.spec.template.spec.initContainers[0].env[1].value
+    order: 2
+manifest:
+  apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: script-runner
+    namespace: ethan-dev
+  spec:
+    backoffLimit: 0
+    template:
+      spec:
+        restartPolicy: Never
+        volumes:
+          - name: workspace
+            emptyDir: {}
+        initContainers:
+          - name: git
+            image: ethanfrogers/fetch-artifact:v2
+            env:
+              - name: BRANCH
+                value: master
+              - name: URL
+                value: placeholder
+              - name: OUTPUT_DIR
+                value: /workspace
+              - name: ARTIFACT_ACCOUNT
+                value: gitrepo
+              - name: ARTIFACT_SERVICE
+                value: http://spin-clouddriver:7002
+            volumeMounts:
+              - name: workspace
+                mountPath: /workspace
+        containers:
+          - name: script
+            image: myorg/scriptContainer:latest # default value, should be replaced by user
+            command:
+              - bash
+              - -c
+              - $(SCRIPT_PATH)
+            workingDir: /workspace
+            env:
+              - name: SCRIPT_PATH
+                value: /default/script/path
+            volumeMounts:
+              - name: workspace
+                mountPath: /workspace
