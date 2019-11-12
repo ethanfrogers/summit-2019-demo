@@ -1,5 +1,7 @@
 # summit-2019-demo
 
+![](https://p-qkfvwn.b3.n0.cdn.getcloudapp.com/items/4gu7Gmm9/Image+2019-11-12+at+8.11.24+AM.png?v=3af332947db60e9bdb9426a644b162b1)
+
 ## About this project
 
 This project contains the source code for the demo I gave at the 2019 Spinnaker Summit in San Diego, CA. The topic of
